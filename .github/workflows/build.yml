@@ -57,3 +57,12 @@ jobs:
       # (minecraft=26.3 in gradle.properties) is what this runs; the -Pminecraft=26.3 twin that
       # used to follow it built the same tree a second time and was removed with the 26.2 sources.
       - run: ./gradlew build
+
+      # What this run built, so a jar can be put on a pack or a device without going through
+      # release.yml, which publishes. A download from the run's own page, expiring with it; nothing
+      # here is released, and a red run uploads nothing.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vitrail-jars
+          path: build/libs/*.jar
+          if-no-files-found: error
