@@ -53,10 +53,7 @@ jobs:
       # What this refuses is whatever build.gradle refuses on the day it runs. Naming the gates here
       # as well would only give them a third home to drift out of step with.
       #
-      # Once per game the tree builds for, in one job rather than a matrix: the rulesets require a
-      # check named build, and a matrix would rename it after each game. The default build comes
-      # first, so a failure there is the one the log opens on; the other games follow in the
-      # order versions/ lists them.
+      # One game, one build. versions/ holds a single file after 26.2 was dropped, and its default
+      # (minecraft=26.3 in gradle.properties) is what this runs; the -Pminecraft=26.3 twin that
+      # used to follow it built the same tree a second time and was removed with the 26.2 sources.
       - run: ./gradlew build
-
-      - run: ./gradlew build -Pminecraft=26.3
