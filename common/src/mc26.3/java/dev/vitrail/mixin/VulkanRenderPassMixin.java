@@ -11,6 +11,7 @@ import com.mojang.renderpearl.backend.vulkan.VulkanRenderPipeline;
 import dev.vitrail.mixin.game.VulkanRenderPipelineAccessor;
 import dev.vitrail.pack.model.TargetName;
 import dev.vitrail.render.GraphicsApi;
+import dev.vitrail.render.NativeVulkan;
 import dev.vitrail.render.PushedDescriptor;
 import dev.vitrail.render.ShadowCompare;
 import dev.vitrail.render.WideSamplerSets;
@@ -107,7 +108,7 @@ public abstract class VulkanRenderPassMixin {
 		} else if (ShadowCompare.noted() && name != null && vitrail$compared().contains(name)) {
 			// Behind the one flag, as on 26.2: until the first pack that compares is loaded, every
 			// pass of the game's own pays a volatile read here and nothing else.
-			sampler = ShadowCompare.sampler(this.device);
+			sampler = ShadowCompare.sampler(NativeVulkan.of(this.device));
 		}
 
 		return original.call(info, sampler);

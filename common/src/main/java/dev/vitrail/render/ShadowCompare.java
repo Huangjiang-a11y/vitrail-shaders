@@ -11,7 +11,6 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.GpuDeviceBackend;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vulkan.VulkanDevice;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK12;
@@ -185,7 +184,7 @@ public final class ShadowCompare {
 	 * The comparison sampler itself, made on the first ask and kept for the device's life. Must run
 	 * on the render thread, which pushing descriptors always is.
 	 */
-	public static long sampler(VulkanDevice device) {
+	public static long sampler(NativeVulkan device) {
 		if (sampler != 0L) {
 			return sampler;
 		}
@@ -235,7 +234,7 @@ public final class ShadowCompare {
 			return;
 		}
 
-		VulkanDevice device = vulkan();
+		NativeVulkan device = vulkan();
 		if (device != null) {
 			VK12.vkDestroySampler(device.vkDevice(), sampler, null);
 		}
@@ -243,13 +242,13 @@ public final class ShadowCompare {
 		sampler = 0L;
 	}
 
-	private static VulkanDevice vulkan() {
+	private static NativeVulkan vulkan() {
 		GpuDevice device = RenderSystem.tryGetDevice();
 		if (device == null) {
 			return null;
 		}
 
 		GpuDeviceBackend backend = ((GpuDeviceAccessor) device).vitrail$backend();
-		return backend instanceof VulkanDevice vulkan ? vulkan : null;
+		return NativeVulkan.of(backend);
 	}
 }
