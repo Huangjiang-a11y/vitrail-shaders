@@ -8,6 +8,18 @@
   OptiFine-format shader packs, on Minecraft's native Vulkan renderer.
 </p>
 
+<blockquote>
+<p><strong>This repository is a modified version of
+<a href="https://github.com/avpbynf/vitrail-shaders">avpbynf/vitrail-shaders</a>.</strong>
+It was forked from the <code>v0.13.0-beta</code> tree on 2026-10-24, and modified to build
+Minecraft 26.3 only: the 26.2 sources and its version file were removed. It carries no
+endorsement from the upstream author.</p>
+<p>Vitrail is distributed under the GNU Lesser General Public License version 3, see
+<code>LICENSE</code>; this fork keeps that license and the <code>NOTICE</code> unchanged.
+Source code for every release is provided in the <code>source code</code> archive of that
+release, as the license requires.</p>
+</blockquote>
+
 <p align="center">
   <a href="https://www.curseforge.com/minecraft/mc-mods/vitrail-shaders"><img src="https://img.shields.io/curseforge/dt/1649385?style=flat-square&logo=curseforge&logoColor=white&label=CurseForge&color=F16436" alt="Vitrail on CurseForge, with its download count"></a>
   <a href="https://modrinth.com/mod/vitrail-shaders"><img src="https://img.shields.io/modrinth/dt/oSIKhgz3?style=flat-square&logo=modrinth&logoColor=white&label=Modrinth&color=00AF5C" alt="Vitrail on Modrinth, with its download count"></a>
