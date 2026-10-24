@@ -10,7 +10,6 @@ import com.mojang.blaze3d.vulkan.VulkanDevice;
 import com.mojang.blaze3d.vulkan.VulkanUtils;
 import org.lwjgl.vulkan.VkCommandBuffer;
 import org.lwjgl.vulkan.VkDevice;
-import org.lwjgl.vulkan.VkInstance;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -40,7 +39,6 @@ public final class NativeVulkan {
 
     private static final Method IS_LAVA_FLOW = bridgeMethod("isLavaFlow", GpuDeviceBackend.class);
     private static final Method VK_DEVICE = bridgeMethod("vkDevice", GpuDeviceBackend.class);
-    private static final Method VK_INSTANCE = bridgeMethod("vkInstance", GpuDeviceBackend.class);
     private static final Method COMMAND_BUFFER =
             bridgeMethod("commandBuffer", CommandEncoderBackend.class);
     private static final Method BUFFER_HANDLE = bridgeMethod("bufferHandle", GpuBuffer.class);
@@ -85,13 +83,6 @@ public final class NativeVulkan {
         return this.official != null
                 ? this.official.vkDevice()
                 : (VkDevice) invoke(VK_DEVICE, this.lavaflow);
-    }
-
-    /** The {@code VkInstance}, or null when the backend is neither. */
-    public VkInstance vkInstance() {
-        return this.official != null
-                ? this.official.instance().instance()
-                : (VkInstance) invoke(VK_INSTANCE, this.lavaflow);
     }
 
     /**
