@@ -46,6 +46,15 @@ public final class NativeVulkan {
     private static final Method IMAGE_VIEW_HANDLE =
             bridgeMethod("imageViewHandle", GpuTextureView.class);
     private static final Method SAMPLER_HANDLE = bridgeMethod("samplerHandle", GpuSampler.class);
+    private static final Method CREATE_BUFFER =
+            bridgeMethod("createBuffer", GpuDeviceBackend.class, long.class, int.class);
+    private static final Method DESTROY_BUFFER =
+            bridgeMethod("destroyBuffer", GpuDeviceBackend.class, long.class, long.class);
+    private static final Method CREATE_IMAGE =
+            bridgeMethod("createImage", GpuDeviceBackend.class, int.class, int.class, int.class,
+                    int.class, int.class, int.class, int.class, int.class, int.class);
+    private static final Method DESTROY_IMAGE =
+            bridgeMethod("destroyImage", GpuDeviceBackend.class, long.class, long.class);
 
     /** The game's own Vulkan backend, or null when this is LavaFlow's. */
     private final VulkanDevice official;
@@ -96,6 +105,45 @@ public final class NativeVulkan {
         return this.official != null ? this.official.vma() : 0L;
     }
 
+    /** The backend these handles were read from, which the allocator hands back. */
+    public GpuDeviceBackend backend() {
+        return this.lavaflow;
+    }
+
+    /**
+     * Whether a pack's storage resources can be made through this backend.
+     *
+     * <p>Only LavaFlow's side can: the game's own backend keeps VMA and its storage paths
+     * still ask {@link #vma()}. This fork serves LavaFlow, so a backend without
+     * {@code createBuffer} retires the storage path instead.
+     */
+    public boolean canAllocate() {
+        return this.lavaflow != null && CREATE_BUFFER != null;
+    }
+
+    /** {@code {VkBuffer, VkDeviceMemory}}, or null when this backend cannot make one. */
+    public long[] createBuffer(long size, int usage) {
+        return canAllocate() ? (long[]) invoke(CREATE_BUFFER, this.lavaflow, size, usage) : null;
+    }
+
+    /** Frees a buffer {@link #createBuffer} made. Both handles may be 0. */
+    public void destroyBuffer(long buffer, long memory) {
+        if (DESTROY_BUFFER != null) invoke(DESTROY_BUFFER, this.lavaflow, buffer, memory);
+    }
+
+    /** {@code {VkImage, VkDeviceMemory}}, or null when this backend cannot make one. */
+    public long[] createImage(int format, int width, int height, int mipLevels, int arrayLayers,
+            int samples, int tiling, int usage, int initialLayout) {
+        return CREATE_IMAGE == null ? null
+                : (long[]) invoke(CREATE_IMAGE, this.lavaflow, format, width, height, mipLevels,
+                        arrayLayers, samples, tiling, usage, initialLayout);
+    }
+
+    /** Frees an image {@link #createImage} made. Both handles may be 0. */
+    public void destroyImage(long image, long memory) {
+        if (DESTROY_IMAGE != null) invoke(DESTROY_IMAGE, this.lavaflow, image, memory);
+    }
+
     /** Whether the backend is the game's own Vulkan one. */
     public boolean official() {
         return this.official != null;
@@ -140,19 +188,22 @@ public final class NativeVulkan {
         return SAMPLER_HANDLE == null ? 0L : (Long) invoke(SAMPLER_HANDLE, sampler);
     }
 
-    private static Object invoke(Method method, Object target) {
+    private static Object invoke(Method method, Object target, Object... args) {
         if (method == null || target == null) {
             return null;
         }
 
         try {
-            return method.invoke(null, target);
+            Object[] all = new Object[args.length + 1];
+            all[0] = target;
+            System.arraycopy(args, 0, all, 1, args.length);
+            return method.invoke(null, all);
         } catch (IllegalAccessException | InvocationTargetException failure) {
             throw new IllegalStateException("Vitrail's LavaFlow bridge could not be read", failure);
         }
     }
 
-    private static Method bridgeMethod(String name, Class<?> parameter) {
+    private static Method bridgeMethod(String name, Class<?>... parameters) {
         Class<?> bridge = bridgeClass();
 
         if (bridge == null) {
@@ -160,7 +211,7 @@ public final class NativeVulkan {
         }
 
         try {
-            return bridge.getMethod(name, parameter);
+            return bridge.getMethod(name, parameters);
         } catch (NoSuchMethodException absent) {
             // A LavaFlow older than the method: answer null and let the caller retire its path.
             return null;
